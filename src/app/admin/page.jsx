@@ -575,7 +575,12 @@ export default function AdminPage() {
                       </td>
                       <td className="py-4">
                         <p className="font-semibold text-[#2D1B14]">{order.customer}</p>
-                        <p className="text-xs text-[#75665B]">{order.email}</p>
+                        <p className="text-xs text-[#75665B]">{order.phone || order.email}</p>
+                        {order.bkashDetails && (
+                          <div className="mt-1 inline-block bg-[#E2136E]/10 border border-[#E2136E]/20 text-[#E2136E] text-[10px] font-bold px-2 py-0.5 rounded-md font-mono">
+                            bKash: {order.bkashDetails.senderNumber} | Trx: {order.bkashDetails.trxId}
+                          </div>
+                        )}
                       </td>
                       <td className="py-4 text-[#75665B] text-xs max-w-xs">
                         {order.items.join(" + ")}

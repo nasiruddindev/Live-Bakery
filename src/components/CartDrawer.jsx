@@ -56,6 +56,8 @@ export default function CartDrawer() {
   const [cityArea, setCityArea] = useState("Dhanmondi, Dhaka");
   const [note, setNote] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cod"); // 'cod' | 'bkash'
+  const [bkashNumber, setBkashNumber] = useState("");
+  const [bkashTrxId, setBkashTrxId] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderError, setOrderError] = useState("");
@@ -114,6 +116,17 @@ export default function CartDrawer() {
       return;
     }
 
+    if (paymentMethod === "bkash") {
+      if (!bkashNumber.trim() || bkashNumber.trim().length < 11) {
+        setOrderError("Please enter the bKash number used to send the payment.");
+        return;
+      }
+      if (!bkashTrxId.trim() || bkashTrxId.trim().length < 6) {
+        setOrderError("Please enter a valid bKash Transaction ID (TrxID).");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -135,7 +148,11 @@ export default function CartDrawer() {
         discount,
         deliveryFee,
         total: finalTotal,
-        paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : "bKash / Online",
+        paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : "bKash Online",
+        bkashDetails: paymentMethod === "bkash" ? {
+          senderNumber: bkashNumber.trim(),
+          trxId: bkashTrxId.trim().toUpperCase()
+        } : null,
         userId: user?.uid || null
       };
 
@@ -471,14 +488,56 @@ export default function CartDrawer() {
                         onClick={() => setPaymentMethod("bkash")}
                         className={`p-3 rounded-2xl border flex items-center gap-2.5 cursor-pointer transition-all ${
                           paymentMethod === "bkash"
-                            ? "border-[#F26535] bg-[#F26535]/10 text-[#2D1B14] font-bold"
+                            ? "border-[#E2136E] bg-[#E2136E]/10 text-[#2D1B14] font-bold"
                             : "border-[#E7D9C5] bg-white text-[#75665B]"
                         }`}
                       >
-                        <CreditCard size={18} className={paymentMethod === "bkash" ? "text-[#F26535]" : ""} />
-                        <span className="text-xs">bKash / Card</span>
+                        <CreditCard size={18} className={paymentMethod === "bkash" ? "text-[#E2136E]" : ""} />
+                        <span className="text-xs">bKash (Send Money)</span>
                       </label>
                     </div>
+
+                    {/* bKash Instructions & Inputs Box */}
+                    {paymentMethod === "bkash" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        className="mt-3 p-4 rounded-2xl bg-[#E2136E]/5 border border-[#E2136E]/20 space-y-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-[#E2136E] uppercase tracking-wider">
+                            bKash Personal Number
+                          </span>
+                          <span className="text-xs font-bold font-mono bg-white px-2 py-0.5 rounded-md border border-[#E2136E]/30 text-[#E2136E]">
+                            01700-000000
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#75665B] leading-relaxed">
+                          Please <strong>Send Money</strong> of <span className="font-bold text-[#2D1B14]">৳{finalTotal.toLocaleString()}</span> to the above number, then enter your bKash Number & TrxID below:
+                        </p>
+
+                        <div className="space-y-2 pt-1">
+                          <div>
+                            <input
+                              type="tel"
+                              placeholder="Your bKash Number (e.g. 018XXXXXXXX)"
+                              value={bkashNumber}
+                              onChange={(e) => setBkashNumber(e.target.value)}
+                              className="w-full px-3 py-2 text-xs bg-white border border-[#E7D9C5] rounded-xl focus:outline-none focus:border-[#E2136E]"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="bKash Transaction ID (e.g. BL9A8X7K)"
+                              value={bkashTrxId}
+                              onChange={(e) => setBkashTrxId(e.target.value)}
+                              className="w-full px-3 py-2 text-xs uppercase font-mono bg-white border border-[#E7D9C5] rounded-xl focus:outline-none focus:border-[#E2136E]"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
                 </div>
 
