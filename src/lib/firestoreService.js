@@ -95,74 +95,66 @@ export const seedDefaultProducts = async () => {
 
 // ── ORDERS ──
 export const createOrderInFirestore = async (orderData) => {
-  const fallbackId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
+  const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
   const formattedDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
   
   const completeOrder = {
     ...orderData,
-    id: fallbackId,
+    id: orderId,
     status: "pending",
-    date: formattedDate
+    date: formattedDate,
+    createdAt: serverTimestamp()
   };
 
-  // Save to browser localStorage so Admin Panel always sees it even if Firestore fails
+  // 1. Attempt to save directly to Cloud Firestore with the exact same ID
   try {
-    if (typeof window !== "undefined") {
-      const existing = JSON.parse(localStorage.getItem("grain_oven_local_orders") || "[]");
-      localStorage.setItem("grain_oven_local_orders", JSON.stringify([completeOrder, ...existing]));
-    }
-  } catch (e) {
-    console.warn("Could not save to localStorage:", e);
-  }
-
-  // Attempt saving to Cloud Firestore
-  try {
-    const docRef = await addDoc(collection(db, "orders"), {
-      ...orderData,
-      status: "pending",
-      createdAt: serverTimestamp(),
-      date: formattedDate
-    });
-    return docRef.id;
+    await setDoc(doc(db, "orders", orderId), completeOrder);
+    return orderId;
   } catch (error) {
-    console.warn("Firestore write blocked by Security Rules. Saved to Local fallback successfully:", error);
-    // Return fallbackId so the user never gets an error screen
-    return fallbackId;
+    console.warn("Firestore write restricted. Falling back to local cache:", error);
+    // If Firestore fails, save to localStorage fallback with the exact same orderId
+    try {
+      if (typeof window !== "undefined") {
+        const existing = JSON.parse(localStorage.getItem("grain_oven_local_orders") || "[]");
+        localStorage.setItem("grain_oven_local_orders", JSON.stringify([{ ...completeOrder, createdAt: new Date().toISOString() }, ...existing]));
+      }
+    } catch (e) {}
+    return orderId;
   }
 };
 
 export const subscribeOrders = (callback) => {
-  const getCombinedOrders = (firestoreOrders = []) => {
-    let localOrders = [];
-    try {
-      if (typeof window !== "undefined") {
-        localOrders = JSON.parse(localStorage.getItem("grain_oven_local_orders") || "[]");
-      }
-    } catch (e) {}
-
-    // Deduplicate by ID
-    const map = new Map();
-    [...localOrders, ...firestoreOrders].forEach(o => {
-      if (!map.has(o.id)) map.set(o.id, o);
-    });
-    return Array.from(map.values());
-  };
-
   try {
     const q = query(collection(db, "orders"));
     return onSnapshot(q, (snapshot) => {
-      const orders = [];
-      snapshot.forEach((doc) => {
-        orders.push({ id: doc.id, ...doc.data() });
-      });
-      callback(getCombinedOrders(orders));
+      if (!snapshot.empty) {
+        const orders = [];
+        snapshot.forEach((doc) => {
+          orders.push({ id: doc.id, ...doc.data() });
+        });
+        callback(orders);
+      } else {
+        // Fallback to local storage only if Firestore is completely empty
+        let localOrders = [];
+        try {
+          if (typeof window !== "undefined") {
+            localOrders = JSON.parse(localStorage.getItem("grain_oven_local_orders") || "[]");
+          }
+        } catch (e) {}
+        callback(localOrders);
+      }
     }, (err) => {
       console.warn("Orders subscribe fallback to local orders:", err);
-      callback(getCombinedOrders([]));
+      let localOrders = [];
+      try {
+        if (typeof window !== "undefined") {
+          localOrders = JSON.parse(localStorage.getItem("grain_oven_local_orders") || "[]");
+        }
+      } catch (e) {}
+      callback(localOrders);
     });
   } catch (err) {
     console.error("Error in subscribeOrders:", err);
-    callback(getCombinedOrders([]));
     return () => {};
   }
 };
