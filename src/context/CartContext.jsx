@@ -84,6 +84,10 @@ export function CartProvider({ children }) {
     setCart((prev) => prev.filter((item) => item.id === id));
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
   const toggleWishlist = (id) => {
     setWishlist((prev) => {
       const exists = prev.includes(id);
@@ -116,6 +120,8 @@ export function CartProvider({ children }) {
         addToCart,
         updateQuantity,
         removeFromCart,
+        clearCart,
+        showToast,
         toastMessage,
       }}
     >
