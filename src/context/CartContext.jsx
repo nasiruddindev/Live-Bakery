@@ -81,7 +81,7 @@ export function CartProvider({ children }) {
   };
 
   const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((item) => item.id === id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   const clearCart = () => {
