@@ -23,10 +23,10 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { name: "Menu", href: "#menu" },
-    { name: "Our Story", href: "#our-story" },
-    { name: "Catering", href: "#offers" },
-    { name: "Locations", href: "#footer" },
+    { name: "Menu", href: "/#menu" },
+    { name: "Our Story", href: "/#our-story" },
+    { name: "Catering", href: "/#offers" },
+    { name: "Admin", href: "/admin" },
   ];
 
   return (

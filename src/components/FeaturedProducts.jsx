@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star, Heart, Plus, Check, Clock, Eye,
   X, ShoppingBag, Flame, Minus, ChevronRight,
 } from "lucide-react";
-import { products } from "../data/products";
+import { products as localProducts } from "../data/products";
 import { useCart } from "../context/CartContext";
+import { subscribeProducts } from "../lib/firestoreService";
 
 /* ─── Quick View Modal ─────────────────────────────────────────── */
 function QuickViewModal({ product, onClose }) {
@@ -198,10 +200,21 @@ function QuickViewModal({ product, onClose }) {
 
 /* ─── Main Section ─────────────────────────────────────────────── */
 export default function FeaturedProducts({ selectedCategory, onCategoryChange }) {
+  const router = useRouter();
   const { addToCart, wishlist, toggleWishlist } = useCart();
+  const [productsList, setProductsList] = useState(localProducts);
   const [filter, setFilter] = useState("all");
   const [addedItemMap, setAddedItemMap] = useState({});
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeProducts((items) => {
+      if (items && items.length > 0) {
+        setProductsList(items);
+      }
+    });
+    return () => unsubscribe && unsubscribe();
+  }, []);
 
   const activeFilter = selectedCategory || filter;
 
@@ -219,7 +232,7 @@ export default function FeaturedProducts({ selectedCategory, onCategoryChange })
     if (onCategoryChange) onCategoryChange(id === "all" ? null : id);
   };
 
-  const displayedProducts = products.filter((p) => {
+  const displayedProducts = productsList.filter((p) => {
     if (activeFilter === "all" || !activeFilter) return true;
     if (activeFilter === "cookies") return p.category === "cookies" || p.category === "donuts";
     if (activeFilter === "cakes") return p.category === "cakes";
@@ -289,7 +302,10 @@ export default function FeaturedProducts({ selectedCategory, onCategoryChange })
                     className="group bg-white rounded-3xl p-4 border border-[#E7D9C5] shadow-xs hover:shadow-xl hover:border-[#F26535]/30 transition-all duration-300 flex flex-col justify-between"
                   >
                     {/* Image Container */}
-                    <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#F7EFDF]">
+                    <div
+                      className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#F7EFDF] cursor-pointer"
+                      onClick={() => router.push(`/products/${product.id}`)}
+                    >
                       <img
                         src={product.image}
                         alt={product.name}
@@ -304,7 +320,7 @@ export default function FeaturedProducts({ selectedCategory, onCategoryChange })
 
                       {/* Wishlist Button */}
                       <button
-                        onClick={() => toggleWishlist(product.id)}
+                        onClick={(e) => { e.stopPropagation(); toggleWishlist(product.id); }}
                         className={`absolute top-3 right-3 w-8 h-8 rounded-full backdrop-blur-md flex items-center justify-center transition-all ${
                           isWishlisted
                             ? "bg-rose-50 text-rose-500 shadow-md"
@@ -315,19 +331,20 @@ export default function FeaturedProducts({ selectedCategory, onCategoryChange })
                         <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} strokeWidth={isWishlisted ? 0 : 2} />
                       </button>
 
-                      {/* ── Quick View Button — shows on hover ── */}
+                      {/* ── Eye / Quick View Icon — always visible top-left area, below badge ── */}
                       <motion.button
-                        onClick={() => setQuickViewProduct(product)}
-                        initial={{ opacity: 0, y: 8 }}
-                        whileHover={{ scale: 1.04 }}
-                        className="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/95 backdrop-blur-md text-[#2D1B14] text-[11px] font-semibold px-4 py-2 rounded-full shadow-lg flex items-center gap-1.5 whitespace-nowrap cursor-pointer hover:bg-[#F26535] hover:text-white border border-white/60"
+                        onClick={(e) => { e.stopPropagation(); setQuickViewProduct(product); }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="absolute top-3 right-12 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md text-[#75665B] hover:bg-[#F26535] hover:text-white flex items-center justify-center transition-all shadow-sm cursor-pointer"
+                        aria-label="Quick view"
+                        title="Quick View"
                       >
-                        <Eye size={13} />
-                        Quick View
+                        <Eye size={15} />
                       </motion.button>
 
                       {/* Prep Time Pill */}
-                      <div className="absolute bottom-3 left-3 bg-[#2D1B14]/80 group-hover:opacity-0 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-opacity duration-200">
+                      <div className="absolute bottom-3 left-3 bg-[#2D1B14]/80 backdrop-blur-md text-white text-[10px] font-medium px-2.5 py-0.5 rounded-full flex items-center gap-1">
                         <Clock size={11} /> {product.prepTime}
                       </div>
                     </div>
@@ -351,7 +368,7 @@ export default function FeaturedProducts({ selectedCategory, onCategoryChange })
 
                         {/* Title */}
                         <h3
-                          onClick={() => setQuickViewProduct(product)}
+                          onClick={() => router.push(`/products/${product.id}`)}
                           className="font-serif text-lg font-bold text-[#2D1B14] group-hover:text-[#F26535] transition-colors leading-snug cursor-pointer"
                         >
                           {product.name}

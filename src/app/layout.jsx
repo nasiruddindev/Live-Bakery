@@ -1,4 +1,6 @@
 import "./globals.css";
+import ClientLayout from "../components/ClientLayout";
+
 
 export const metadata = {
   title: "GRAIN & OVEN | Artisan Bakery & Kitchen",
@@ -10,7 +12,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-[#FFF8EA] text-[#2D1B14] selection:bg-[#F26535] selection:text-white">
-        {children}
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );
