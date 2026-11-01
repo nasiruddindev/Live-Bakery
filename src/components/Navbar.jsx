@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, ShoppingBag, Menu as MenuIcon, X } from "lucide-react";
+import { Search, ShoppingBag, Menu as MenuIcon, X, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
-  const { totalItems, setIsCartOpen, setIsSearchOpen, setIsSignInOpen } = useCart();
+  const { totalItems, setIsCartOpen, setIsSearchOpen, setIsSignInOpen, showToast } = useCart();
+  const { user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -85,13 +88,61 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Sign In Button with thin border */}
-          <button
-            onClick={() => setIsSignInOpen(true)}
-            className="hidden sm:inline-flex items-center px-5 py-2 rounded-full border border-[#2D1B14]/30 text-[#2D1B14] text-sm font-medium hover:border-[#2D1B14] hover:bg-[#2D1B14] hover:text-white transition-all duration-200 cursor-pointer"
-          >
-            Sign In
-          </button>
+          {/* User Profile or Sign In Button */}
+          {user ? (
+            <div className="relative hidden sm:block">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-[#F7EFDF] border border-[#E7D9C5] text-xs font-semibold text-[#2D1B14] hover:border-[#F26535] transition-all cursor-pointer"
+              >
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt=""
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-[#F26535] text-white flex items-center justify-center font-bold text-[10px]">
+                    {user.displayName ? user.displayName[0].toUpperCase() : user.email[0].toUpperCase()}
+                  </div>
+                )}
+                <span className="max-w-[100px] truncate">{user.displayName || user.email.split("@")[0]}</span>
+              </button>
+
+              <AnimatePresence>
+                {isUserMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-48 bg-white border border-[#E7D9C5] rounded-2xl shadow-xl p-2 z-50"
+                  >
+                    <div className="px-3 py-2 border-b border-[#E7D9C5]/50 mb-1">
+                      <p className="text-xs font-bold text-[#2D1B14] truncate">{user.displayName || "Customer"}</p>
+                      <p className="text-[10px] text-[#75665B] truncate">{user.email}</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setIsUserMenuOpen(false);
+                        await logout();
+                        showToast("Signed out successfully.", "info");
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      <LogOut size={14} /> Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsSignInOpen(true)}
+              className="hidden sm:inline-flex items-center px-5 py-2 rounded-full border border-[#2D1B14]/30 text-[#2D1B14] text-sm font-medium hover:border-[#2D1B14] hover:bg-[#2D1B14] hover:text-white transition-all duration-200 cursor-pointer"
+            >
+              Sign In
+            </button>
+          )}
 
           {/* Mobile Menu Button */}
           <button

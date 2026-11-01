@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { CartProvider } from "../context/CartContext";
+import { AuthProvider } from "../context/AuthContext";
 import Navbar from "./Navbar";
 import CartDrawer from "./CartDrawer";
 import SearchModal from "./SearchModal";
@@ -13,16 +14,24 @@ export default function ClientLayout({ children }) {
   const isAdmin = pathname?.startsWith("/admin");
 
   // Admin pages have their own layout — skip main site wrapper
-  if (isAdmin) return <>{children}</>;
+  if (isAdmin) {
+    return (
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    );
+  }
 
   return (
-    <CartProvider>
-      <Navbar />
-      {children}
-      <CartDrawer />
-      <SearchModal />
-      <SignInModal />
-      <Toast />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <Navbar />
+        {children}
+        <CartDrawer />
+        <SearchModal />
+        <SignInModal />
+        <Toast />
+      </CartProvider>
+    </AuthProvider>
   );
 }
