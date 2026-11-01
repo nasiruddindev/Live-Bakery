@@ -62,6 +62,7 @@ export default function CartDrawer() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [placedOrderId, setPlacedOrderId] = useState("");
+  const [confirmedBill, setConfirmedBill] = useState(0);
 
   // Pre-fill user info if logged in
   useEffect(() => {
@@ -158,6 +159,7 @@ export default function CartDrawer() {
 
       const docId = await createOrderInFirestore(orderPayload);
       setPlacedOrderId(docId.slice(-6).toUpperCase());
+      setConfirmedBill(finalTotal);
       clearCart();
       setStep("success");
       showToast("Order placed successfully! Freshly baking now.", "success");
@@ -600,7 +602,7 @@ export default function CartDrawer() {
                   </div>
                   <div className="flex justify-between pt-1 border-t border-[#E7D9C5]">
                     <span className="text-[#75665B]">Total Bill:</span>
-                    <span className="font-bold text-[#F26535]">৳{finalTotal.toLocaleString()}</span>
+                    <span className="font-bold text-[#F26535]">৳{confirmedBill.toLocaleString()}</span>
                   </div>
                 </div>
 
