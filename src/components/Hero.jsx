@@ -63,7 +63,7 @@ export default function Hero() {
             {/* Headline */}
             <motion.h1
               variants={lineVariants}
-              className="font-serif text-[48px] sm:text-[64px] md:text-[74px] lg:text-[80px] xl:text-[86px] font-extrabold text-[#2D1B14] leading-[1.02] tracking-[-0.02em]"
+              className="font-serif text-[38px] sm:text-[48px] md:text-[56px] lg:text-[62px] xl:text-[68px] font-extrabold text-[#2D1B14] leading-[1.08] tracking-[-0.02em]"
             >
               Freshly Baked.
               <br />
