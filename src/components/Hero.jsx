@@ -15,7 +15,7 @@ export default function Hero() {
       name: "Classic Pepperoni Pizza",
       categoryName: "Artisan Pizza",
       price: 1250,
-      image: "/hero-pizza.png",
+      image: "/hero.png",
     });
     setIsCartOpen(true);
   };
@@ -119,7 +119,7 @@ export default function Hero() {
 
                 {/* Clean Transparent Pizza Image */}
                 <motion.img
-                  src="/hero-pizza.png?v=4"
+                  src="/hero.png"
                   alt="Delicious Cheesy Artisan Pizza"
                   animate={
                     isHovered
