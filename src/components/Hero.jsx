@@ -119,7 +119,7 @@ export default function Hero() {
 
                 {/* Clean Transparent Pizza Image */}
                 <motion.img
-                  src="/pizza.png"
+                  src="/pizza.png?v=2"
                   alt="Delicious Cheesy Artisan Pizza"
                   animate={
                     isHovered
