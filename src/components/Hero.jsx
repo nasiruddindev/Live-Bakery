@@ -1,54 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { ArrowUpRight, Star, Sparkles, Flame } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpRight, Star, Sparkles, Flame, Tag, Percent } from "lucide-react";
 import { useCart } from "../context/CartContext";
 
 export default function Hero() {
   const { addToCart, setIsCartOpen } = useCart();
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    // Force muted (required for autoplay in all browsers)
-    video.muted = true;
-    video.defaultMuted = true;
-    video.volume = 0;
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-
-    const tryPlay = () => {
-      const p = video.play();
-      if (p !== undefined) {
-        p.catch(() => {
-          // If autoplay fails, try again on first user interaction
-          const resume = () => {
-            video.play().catch(() => {});
-            document.removeEventListener("click", resume);
-            document.removeEventListener("touchstart", resume);
-            document.removeEventListener("scroll", resume);
-          };
-          document.addEventListener("click", resume, { once: true });
-          document.addEventListener("touchstart", resume, { once: true });
-          document.addEventListener("scroll", resume, { once: true });
-        });
-      }
-    };
-
-    if (video.readyState >= 2) {
-      tryPlay();
-    } else {
-      video.addEventListener("canplay", tryPlay, { once: true });
-      video.load(); // force reload
-    }
-
-    return () => {
-      video.removeEventListener("canplay", tryPlay);
-    };
-  }, []);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleOrderHeroPizza = () => {
     addToCart({
@@ -56,7 +15,7 @@ export default function Hero() {
       name: "Classic Pepperoni Pizza",
       categoryName: "Artisan Pizza",
       price: 1250,
-      image: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=600&q=80",
+      image: "/hero-pizza.png",
     });
     setIsCartOpen(true);
   };
@@ -78,7 +37,7 @@ export default function Hero() {
     >
       {/* Ambient glow blobs */}
       <div className="absolute right-0 top-1/4 w-[650px] h-[650px] bg-[#F7EFDF]/80 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute right-[20%] bottom-[15%] w-[450px] h-[450px] bg-[#F26535]/6 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute right-[20%] bottom-[15%] w-[450px] h-[450px] bg-[#F26535]/8 rounded-full blur-3xl pointer-events-none" />
 
       {/* Golden olive oil droplets */}
       <motion.div
@@ -150,18 +109,20 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          {/* ===================== RIGHT COLUMN — VIDEO ===================== */}
+          {/* ===================== RIGHT COLUMN — NEW PIZZA WITH HOVER ===================== */}
           <div className="lg:col-span-6 relative flex items-center justify-center lg:justify-end min-h-[460px] sm:min-h-[540px] lg:min-h-[600px]">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
               className="relative w-full max-w-[540px] lg:max-w-[580px]"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
             >
-              {/* Gentle floating animation */}
+              {/* Gentle floating animation container */}
               <motion.div
-                animate={{ y: [0, -12, 0], rotate: [0, 1, 0] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ y: [0, -12, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 className="relative"
               >
                 {/* Floating tomato - top right */}
@@ -209,34 +170,57 @@ export default function Hero() {
                   className="absolute top-[18%] -right-4 w-12 sm:w-14 pointer-events-none z-30 drop-shadow-[0_6px_12px_rgba(45,27,20,0.12)]"
                 />
 
-                {/* Video frame — clean glass look */}
-                <div className="relative w-full aspect-square rounded-[36px] sm:rounded-[44px] overflow-hidden bg-[#2D1B14]/5 backdrop-blur-sm">
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    poster="/hero-pizza-raw.jpg"
-                    className="w-full h-full object-cover"
-                    style={{ pointerEvents: "none" }}
-                    x-webkit-airplay="allow"
-                    x5-video-player-type="h5"
-                    x5-video-player-fullscreen="false"
-                  >
-                    <source src="/herobanner.mp4#t=0.001" type="video/mp4" />
-                    <source src="/hero-pizza-video.mp4" type="video/mp4" />
-                  </video>
+                {/* Main Hero Pizza Image Showcase */}
+                <div className="relative w-full aspect-square flex items-center justify-center cursor-pointer group">
+                  {/* Subtle radial shadow under the pizza */}
+                  <div className="absolute inset-8 rounded-full bg-[#2D1B14]/15 blur-2xl -z-10 group-hover:scale-105 transition-transform duration-700" />
 
-                  {/* Subtle gradient at the bottom for badge contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+                  {/* Pizza Image with interactive hover movement */}
+                  <motion.img
+                    src="/hero-pizza.png"
+                    alt="Delicious Cheesy Artisan Pizza"
+                    animate={
+                      isHovered
+                        ? { scale: 1.06, rotate: 4 }
+                        : { scale: 1, rotate: 0 }
+                    }
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="w-full h-full object-contain filter drop-shadow-[0_24px_36px_rgba(45,27,20,0.22)] select-none"
+                  />
 
-                  {/* Live status badge */}
-                  <div className="absolute top-4 left-4 bg-white/85 backdrop-blur-md text-[#2D1B14] text-[11px] font-semibold px-3 py-1 rounded-full border border-white/50 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Artisan Oven Live
-                  </div>
+                  {/* ── STYLISH HOVER DISCOUNT OVERLAY ── */}
+                  <AnimatePresence>
+                    {isHovered && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.85, y: 15 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        className="absolute inset-0 flex items-center justify-center pointer-events-none z-40"
+                      >
+                        <div className="bg-[#2D1B14]/85 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/20 shadow-2xl text-center transform -rotate-2 flex flex-col items-center gap-1">
+                          {/* Top Badge */}
+                          <div className="inline-flex items-center gap-1 bg-[#F26535] text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                            <Sparkles size={11} /> Limited Oven Special
+                          </div>
+
+                          {/* 25% Discount Text with Gradient */}
+                          <div className="font-serif text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FFD166] via-[#F26535] to-[#FFE3A8] leading-tight">
+                            25% DISCOUNT
+                          </div>
+
+                          {/* Delicious Pizza Subtext */}
+                          <p className="text-white/90 text-xs sm:text-sm font-medium tracking-wide">
+                            Delicious Artisan Cheesy Pizza
+                          </p>
+
+                          <div className="text-[10px] text-white/60 font-sans mt-0.5">
+                            Use code: <span className="text-[#FFD166] font-bold">CHEESE25</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Badge 1 — Artisan Pepperoni */}
@@ -250,7 +234,7 @@ export default function Hero() {
                 >
                   <span className="w-2 h-2 rounded-full bg-[#F26535] animate-ping" />
                   <span className="text-xs sm:text-sm font-serif font-bold text-[#2D1B14] group-hover:text-[#F26535] transition-colors">
-                    Artisan Pepperoni — <span className="font-sans">৳1,250</span>
+                    Artisan Cheesy — <span className="font-sans">৳1,250</span>
                   </span>
                 </motion.div>
 
