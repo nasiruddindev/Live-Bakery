@@ -119,7 +119,7 @@ export default function Hero() {
 
                 {/* Clean Transparent Pizza Image */}
                 <motion.img
-                  src="/hero-pizza.png"
+                  src="/hero-pizza.png?v=3"
                   alt="Delicious Cheesy Artisan Pizza"
                   animate={
                     isHovered
@@ -127,7 +127,7 @@ export default function Hero() {
                       : { scale: 1, rotate: 0 }
                   }
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-[90%] h-[90%] object-contain filter drop-shadow-[0_20px_35px_rgba(45,27,20,0.22)] select-none"
+                  className="w-[90%] h-[90%] max-h-[500px] object-contain filter drop-shadow-[0_20px_35px_rgba(45,27,20,0.22)] select-none pointer-events-auto"
                 />
 
                 {/* ── PREMIUM HOVER DISCOUNT OVERLAY ── */}
