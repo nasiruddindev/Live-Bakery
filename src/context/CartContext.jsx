@@ -24,12 +24,53 @@ export const initialCartItems = [
 ];
 
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState(initialCartItems);
+  const [cart, setCart] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
-  const [wishlist, setWishlist] = useState(["prod-1"]);
+  const [wishlist, setWishlist] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Load saved cart and wishlist from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedCart = localStorage.getItem("grain_oven_cart");
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      } else {
+        setCart([]);
+      }
+      const savedWishlist = localStorage.getItem("grain_oven_wishlist");
+      if (savedWishlist) {
+        setWishlist(JSON.parse(savedWishlist));
+      }
+    } catch (e) {
+      console.warn("Could not load from localStorage:", e);
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem("grain_oven_cart", JSON.stringify(cart));
+    } catch (e) {
+      console.warn("Could not save cart to localStorage:", e);
+    }
+  }, [cart, isLoaded]);
+
+  // Save wishlist to localStorage whenever it changes
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem("grain_oven_wishlist", JSON.stringify(wishlist));
+    } catch (e) {
+      console.warn("Could not save wishlist to localStorage:", e);
+    }
+  }, [wishlist, isLoaded]);
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);

@@ -47,6 +47,12 @@ export const subscribeProducts = (callback) => {
       snapshot.forEach((doc) => {
         products.push({ id: doc.id, ...doc.data() });
       });
+      // Sort stably by id so order remains consistent across reloads
+      products.sort((a, b) => {
+        const idA = String(a.id);
+        const idB = String(b.id);
+        return idA.localeCompare(idB, undefined, { numeric: true });
+      });
       callback(products);
     }, (error) => {
       console.warn("Firestore subscription fallback to local:", error);
