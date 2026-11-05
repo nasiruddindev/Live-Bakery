@@ -72,7 +72,8 @@ export function CartProvider({ children }) {
     }
   }, [wishlist, isLoaded]);
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Count unique items in cart (not sum of quantities)
+  const totalItems = cart.length;
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const deliveryFee = subtotal > 0 ? 120 : 0;
   const grandTotal = subtotal + deliveryFee;
